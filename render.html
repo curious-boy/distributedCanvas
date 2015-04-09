@@ -1,0 +1,217 @@
+<!-- controller
+
+-->
+<html>
+<head>
+    <title>render</title>
+   <body>
+    <ul id="messages"></ul>
+   <!--  <form action="">
+      <input id="m" autocomplete="off" /><button>Send</button>
+    </form> -->
+
+    <script src="http://10.1.50.36/disRenderNode/js/socket.io-1.2.0.js"></script>
+    <script src="http://10.1.50.36/disRenderNode/js/jquery-1.11.1.js"></script>
+
+</head>
+<body>
+  <canvas id="myCanvas" width=900 height=500>
+    Your browser is not supported canvas!
+</canvas>
+<!-- <button id='btn' onclick="doit()">click me</button> -->
+
+
+ <script>
+      var socket = io();
+      var canvas = document.getElementById('myCanvas');
+
+      // offset of node render 
+      var offsetx = 0;
+      var offsety = 0;
+
+      function initCanvas(width,height){
+        canvas.width = width;
+        canvas.height = height;
+      }
+
+      function drawLine(startx,starty,endx,endy,lineWidth){
+        if (canvas.getContext) {
+            var ctx = canvas.getContext('2d');
+          }
+
+          ctx.beginPath();
+          ctx.moveTo(startx-offsetx,starty-offsety);
+          ctx.lineTo(endx-offsetx,endy-offsety);
+          ctx.lineWidth = lineWidth;
+          ctx.strokeStyle = "#00CC00";
+          ctx.stroke();
+      }
+
+
+      function drawRect(x1,y1,x2,y2,fillStyle,globalAlpha){
+        if (canvas.getContext) {
+            var ctx = canvas.getContext('2d');
+          }
+
+          ctx.fillStyle = fillStyle;
+          ctx.globalAlpha = globalAlpha;
+          ctx.fillRect(x1-offsetx,y1-offsety,x2,y2);
+      }
+
+      function drawImage(posx,posy,width,height,src){
+        if (canvas.getContext) {
+            var ctx = canvas.getContext('2d');
+          }
+          console.log('drawImage');
+          var image = new Image();
+          image.onload = function() {
+            //var canvas = document
+            ctx.drawImage(image,posx-offsetx,posy-offsety,width,height);
+            // ctx.drawImage(image,0,0,100,200);
+          }
+          image.src = src;
+          
+
+
+                // var image = new Image();
+                // image.onload = function() {
+                //   //var canvas = document
+                //   ctx.drawImage(image,0,0,200,200);
+                // }
+
+                // image.src = "http://a2.att.hudong.com/04/58/300001054794129041580438110_950.jpg";
+      }
+
+      function clearCanvas(){
+        if (canvas.getContext) {
+            var ctx = canvas.getContext('2d');
+          }
+          // alert('clear');
+          ctx.clearRect(0,0,canvas.width,canvas.height);
+      }
+
+      // add for animation
+      function clearRect(x,y,width,height){
+        if (canvas.getContext) {
+            var ctx = canvas.getContext('2d');
+          }
+          // alert('clear');
+          ctx.clearRect(x,y,width,height);
+      }
+
+      function fillStyle(style){
+        if (canvas.getContext) {
+            var ctx = canvas.getContext('2d');
+          }
+
+        ctx.fillStyle = style;
+      }
+
+      function arc(x,y,r,sAngle,eAngle,countclockwise){
+        if (canvas.getContext) {
+            var ctx = canvas.getContext('2d');
+          }
+
+          ctx.arc(x,y,r,sAngle,eAngle,countclockwise);
+      }
+
+      function fill(){
+        if (canvas.getContext) {
+            var ctx = canvas.getContext('2d');
+          }
+
+          ctx.fill();
+      }
+
+     
+
+      socket.on('initCanvas',function(canvas){
+         initCanvas(canvas.width,canvas.height);
+      });
+
+      socket.on('drawLine',function(line){
+        drawLine(line.startx,line.starty,line.endx,line.endy,line.lineWidth);
+      });
+
+      socket.on('drawRect',function(rect){
+        drawRect(rect.x1,rect.y1,rect.x2,rect.y2,rect.fillStyle,rect.globalAlpha);
+      });
+
+      socket.on('drawImage',function(image){
+        drawImage(image.posx,image.posy,image.width,image.height,image.src);
+      });
+
+
+      socket.on('clearCanvas',function(msg){
+        clearCanvas();
+      });
+
+
+      // add for lissajous
+      // new added for lissajous
+      socket.on('lineWidth',function(msg){
+          // io.emit('lineWidth',msg);
+          if (canvas.getContext) {
+            var ctx = canvas.getContext('2d');
+          }
+          ctx.lineWidth = msg;
+      });
+      socket.on('strokeStyle',function(msg){
+          if (canvas.getContext) {
+            var ctx = canvas.getContext('2d');
+          }
+
+          ctx.strokeStyle = msg;
+      });
+      socket.on('beginPath',function(msg){
+
+          if (canvas.getContext) {
+            var ctx = canvas.getContext('2d');
+          }
+          ctx.beginPath();
+      });
+      socket.on('lineTo',function(pos){
+
+        if (canvas.getContext) {
+            var ctx = canvas.getContext('2d');
+          }
+          
+          ctx.lineTo(pos.posx-offsetx,pos.posy-offsety);
+      });
+     
+      socket.on('closePath',function(msg){
+        if (canvas.getContext) {
+            var ctx = canvas.getContext('2d');
+          }
+          ctx.closePath();
+      });
+      socket.on('stroke',function(msg){
+        if (canvas.getContext) {
+            var ctx = canvas.getContext('2d');
+          }
+          ctx.stroke();
+      });
+
+      // new added for animation
+  socket.on('clearRect',function(rect){
+      
+      clearRect(rect.x,rect.y,rect.width,rect.height);
+    });
+
+  socket.on('fillStyle',function(style){
+      fillStyle(style);
+  });
+
+  socket.on('arc',function(circle){
+    arc(circle.x-offsetx,circle.y-offsety,circle.r,circle.sAngle,circle.eAngle,circle.countclockwise);
+  });
+
+  socket.on('fill',function(msg){
+    console.log('fill:'+ msg);
+    fill();
+  });
+
+       
+    </script>
+</body>
+</html>
